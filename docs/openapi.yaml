@@ -1,0 +1,780 @@
+openapi: 3.0.3
+info:
+  title: ПрактикаТрек API
+  version: 1.0.0
+  description: REST API учёта сдачи практических работ.
+servers:
+- url: http://localhost:8000
+paths:
+  /api/auth/register:
+    post:
+      tags:
+      - auth
+      summary: Регистрация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '409':
+          description: Конфликт данных (например, email уже занят)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/login:
+    post:
+      tags:
+      - auth
+      summary: 'Вход: получение токена'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/auth/me:
+    get:
+      tags:
+      - auth
+      summary: Текущий пользователь
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/subjects:
+    post:
+      tags:
+      - subjects
+      summary: Создать дисциплину
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectCreate'
+      responses:
+        '201':
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+    get:
+      tags:
+      - subjects
+      summary: Мои дисциплины (преподаватель)
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubjectOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/subjects/{subject_id}/assignments:
+    post:
+      tags:
+      - assignments
+      summary: Добавить практическую работу
+      parameters:
+      - name: subject_id
+        in: path
+        required: true
+        schema: &id001
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentCreate'
+      responses:
+        '201':
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/assignments/{assignment_id}:
+    patch:
+      tags:
+      - assignments
+      summary: Изменить практическую работу
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentUpdate'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - assignments
+      summary: Удалить практическую работу
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema: *id001
+      responses:
+        '204':
+          description: Удалено, тело ответа пустое
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/assignments/{assignment_id}/submissions:
+    get:
+      tags:
+      - assignments
+      summary: Сдачи группы по работе (преподаватель)
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema: *id001
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubmissionRowOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/subjects/{subject_id}/debtors:
+    get:
+      tags:
+      - reports
+      summary: Отчёт о задолженностях (преподаватель)
+      parameters:
+      - name: subject_id
+        in: path
+        required: true
+        schema: *id001
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DebtorOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/submissions:
+    get:
+      tags:
+      - submissions
+      summary: Мои работы (студент) с фильтрами
+      parameters:
+      - name: subject_id
+        in: query
+        required: false
+        schema: *id001
+      - name: status
+        in: query
+        required: false
+        schema: &id004
+          type: string
+          enum:
+          - not_started
+          - in_progress
+          - submitted
+          - rework
+          - accepted
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubmissionOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/submissions/progress:
+    get:
+      tags:
+      - submissions
+      summary: 'Прогресс студента: процент принятых работ'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/submissions/{submission_id}/status:
+    patch:
+      tags:
+      - submissions
+      summary: 'Студент: начать работу или сдать её'
+      parameters:
+      - name: submission_id
+        in: path
+        required: true
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusChange'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /api/submissions/{submission_id}/review:
+    post:
+      tags:
+      - submissions
+      summary: 'Преподаватель: принять или вернуть на доработку'
+      parameters:
+      - name: submission_id
+        in: path
+        required: true
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionOut'
+        '401':
+          description: Не авторизован или недействительный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации данных или недопустимое действие
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - bearerAuth: []
+  /health:
+    get:
+      tags:
+      - service
+      summary: Проверка работоспособности
+      responses:
+        '200':
+          description: Сервис работает
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      required:
+      - email
+      - password
+      - full_name
+      - role
+      properties:
+        email:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: student@example.kz
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          example: secret123
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        role: &id003
+          type: string
+          enum:
+          - student
+          - teacher
+        group:
+          type: string
+          maxLength: 100
+          nullable: true
+          example: БИС 31с
+      type: object
+    LoginRequest:
+      required:
+      - email
+      - password
+      properties:
+        email: &id002
+          type: string
+        password: *id002
+      type: object
+    TokenOut:
+      required:
+      - access_token
+      properties:
+        access_token: *id002
+        token_type:
+          type: string
+          default: bearer
+      type: object
+    UserOut:
+      required:
+      - id
+      - email
+      - full_name
+      - role
+      properties:
+        id: *id001
+        email: *id002
+        full_name: *id002
+        role: *id003
+        group_id:
+          type: integer
+          nullable: true
+      type: object
+    SubjectCreate:
+      required:
+      - name
+      - group
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        group:
+          type: string
+          minLength: 1
+          maxLength: 100
+      type: object
+    SubjectOut:
+      required:
+      - id
+      - name
+      - group_id
+      properties:
+        id: *id001
+        name: *id002
+        group_id: *id001
+      type: object
+    AssignmentCreate:
+      required:
+      - title
+      - deadline
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          default: ''
+          maxLength: 5000
+        deadline:
+          type: string
+          format: date
+          example: '2026-11-20'
+      type: object
+    AssignmentUpdate:
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          nullable: true
+        description:
+          type: string
+          maxLength: 5000
+          nullable: true
+        deadline:
+          type: string
+          format: date
+          nullable: true
+      type: object
+    AssignmentOut:
+      required:
+      - id
+      - subject_id
+      - title
+      - description
+      - deadline
+      properties:
+        id: *id001
+        subject_id: *id001
+        title: *id002
+        description: *id002
+        deadline:
+          type: string
+          format: date
+      type: object
+    StatusChange:
+      required:
+      - status
+      properties:
+        status: *id004
+      type: object
+    ReviewRequest:
+      required:
+      - accept
+      properties:
+        accept:
+          type: boolean
+        comment:
+          type: string
+          default: ''
+          maxLength: 2000
+      type: object
+    SubmissionOut:
+      required:
+      - id
+      - assignment_id
+      - title
+      - subject_id
+      - subject
+      - deadline
+      - status
+      - comment
+      - days_left
+      - flag
+      properties:
+        id: *id001
+        assignment_id: *id001
+        title: *id002
+        subject_id: *id001
+        subject: *id002
+        deadline: *id002
+        status: *id004
+        comment: *id002
+        submitted_at:
+          type: string
+          nullable: true
+        days_left: *id001
+        flag:
+          type: string
+          description: near, overdue или пустая строка
+      type: object
+    SubmissionRowOut:
+      required:
+      - submission_id
+      - student
+      - status
+      - comment
+      properties:
+        submission_id: *id001
+        student: *id002
+        status: *id004
+        comment: *id002
+      type: object
+    DebtorOut:
+      required:
+      - student
+      - assignment
+      - status
+      properties:
+        student: *id002
+        assignment: *id002
+        status: *id004
+      type: object
+    ProgressOut:
+      required:
+      - percent
+      - total
+      - accepted
+      properties:
+        percent: *id001
+        total: *id001
+        accepted: *id001
+      type: object
+    Error:
+      type: object
+      required:
+      - detail
+      properties:
+        detail:
+          oneOf:
+          - *id002
+          - type: array
+            items:
+              type: object
+          description: Строка для ошибок логики; массив для ошибок формата тела запроса

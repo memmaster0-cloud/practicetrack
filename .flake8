@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 100
+exclude = .git,__pycache__,.venv,alembic/versions
+per-file-ignores =
+    docs/gen_api_docs.py:E501
+    scripts/build_delivery.py:E501
