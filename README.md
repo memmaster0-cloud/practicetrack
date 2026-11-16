@@ -39,6 +39,31 @@ docker compose exec app python scripts/seed_demo.py   # демонстрацио
 
 ## Запуск без Docker
 
+### Windows PowerShell
+
+Перейдите в папку проекта: в ней должны быть `README.md`, каталог `app` и `alembic.ini`.
+Проверьте текущую папку командой `Get-Location`. Затем выполните:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+$env:DATABASE_URL = 'sqlite:///./practicetrack.db'
+.\.venv\Scripts\python.exe -m alembic upgrade head
+.\.venv\Scripts\python.exe scripts/seed_demo.py
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+
+Откройте http://127.0.0.1:8000/docs. Окно с сервером оставьте открытым.
+Для следующих команд откройте вторую вкладку PowerShell и перейдите в ту же папку проекта.
+Остановка сервера: `Ctrl+C`. При повторном запуске достаточно последней команды;
+повторная установка зависимостей и заполнение демо-данных нужны только при необходимости.
+
+Если появляется `No module named uvicorn`, проверьте текущую папку и установите
+зависимости именно через `.\.venv\Scripts\python.exe -m pip`.
+Активация окружения не требуется: команды явно используют Python из `.venv`.
+
+### Linux / macOS
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
@@ -85,12 +110,14 @@ scripts/             резервное копирование, восстано
 
 Выполнены pytest с покрытием, BDD и flake8, включая API, SQLAlchemy/SQLite и реальные
 миграции Alembic. Команды, версии и результаты сохранены в `delivery/evidence/`.
-Проверки выполнены на Windows/Python 3.15; Linux/Python 3.12 в CI и PostgreSQL/Docker
-требуют отдельного запуска. Валидация диапазонов PORT и TOKEN_TTL_SECONDS исправлена
+Локальные проверки выполнены на Windows/Python 3.15. На Linux/Python 3.12 также
+[успешно прошли CI, миграции, pytest, BDD и сборка Docker-образа](https://github.com/memmaster0-cloud/practicetrack/actions/runs/43835046455).
+Запуск контейнеров с PostgreSQL и восстановление резервной копии ещё требуют проверки. Валидация диапазонов PORT и TOKEN_TTL_SECONDS исправлена
 через реальный цикл TDD с сохранёнными логами.
 
 ## Комплект практических работ
 
+Материалы `delivery/` подготовлены локально и пока не загружены в этот репозиторий.
 `delivery/README.md` — указатель на 15 отчётов Word, итоговый отчёт, UML/ER,
 презентацию из 13 слайдов и текст выступления. `delivery/REMAINING.md` перечисляет
 необходимые действия в аккаунтах, реальные скриншоты и самооценку автора.
