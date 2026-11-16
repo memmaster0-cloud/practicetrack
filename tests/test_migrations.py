@@ -1,5 +1,7 @@
 """Тест миграций Alembic на SQLite. Пропускается, если alembic или sqlalchemy не установлены."""
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -50,6 +52,15 @@ class MigrationTests(unittest.TestCase):
         command.upgrade(self.cfg, "head")
         self.assertEqual(self.tables(), TABLES)
         self.assertIn("submitted_at", self.columns("submissions"))
+
+    def test_cli_upgrade_without_project_on_python_path(self):
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", "from alembic.config import main; main()",
+             "-c", os.path.join(ROOT, "alembic.ini"), "upgrade", "head"],
+            cwd=ROOT, capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.tables(), TABLES)
 
     def test_first_revision_has_no_submitted_at(self):
         command.upgrade(self.cfg, "0001")
